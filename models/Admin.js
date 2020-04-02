@@ -10,7 +10,7 @@ class Admin {
   static getByEmail(email) {
     const queryText = 'SELECT * FROM admins WHERE email=$1';
     return db.query(queryText, [email])
-      .then((data) => data[0]);
+      .then((data) => data.rows[0]);
   }
 }
 

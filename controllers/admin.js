@@ -17,27 +17,27 @@ const authorize = (req, res) => {
     });
 };
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   const { email, password } = req.body;
-  Admin.getByEmail(email)
-    .then((user) => {
-      if (user) {
-        bcrypt.compare(password, user.password)
-          .then((result) => {
-            if (result) {
-              next();
-            } else {
-              res.status(403).send('Unauthorized User');
-            }
-          });
-      } else {
-        res.status(403).send('Unauthorized User');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      res.send(err);
-    });
+
+  try {
+    const user = await Admin.getByEmail(email);
+
+    if (!user) {
+      return res.status(403).send('Unauthorized User');
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+
+    if (isValidPassword) {
+      return next();
+    }
+
+    return res.status(403).send('Unauthorized User');
+  } catch (err) {
+    console.log(err);
+    return res.send(err);
+  }
 };
 
 module.exports = {
